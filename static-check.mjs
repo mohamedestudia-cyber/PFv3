@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+const root = new URL('../', import.meta.url).pathname;
+const read = f => fs.readFileSync(root + f, 'utf8');
+for (const f of ['app.js','games-arcade.js','focusia-local.js','server.mjs']) execFileSync(process.execPath,['--check',root+f]);
+const html=read('index.html'), games=read('games-arcade.js'), app=read('app.js'), server=read('server.mjs');
+for (const id of ['game-menu','game-container','launch-game','game-difficulty','game-history','page-juegos','page-focusia']) assert.equal((html.match(new RegExp(`id=["']${id}["']`,'g'))||[]).length,1,`ID ${id}`);
+for (const token of ['Temple dels Patrons','Volcà dels Números','Illes de Paraules','Ciutat de l’Atenció','AL REVÉS','pointerdown','Escape']) assert.ok(games.includes(token),`game token ${token}`);
+for (const token of ['/api/health','/api/focusia','OPENAI_API_KEY','AbortController','FocusLocal']) assert.ok(app.includes(token)||server.includes(token),`AI token ${token}`);
+assert.ok(read('sw.js').includes('pantalla-focus-v8'),'service worker version');
+assert.ok(!games.includes('three'),'games have no CDN dependency');
+console.log('STATIC CHECK PASS');
